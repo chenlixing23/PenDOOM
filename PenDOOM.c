@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define TARGET_FRAME_US 28500 // 35 FPS 原版标准
+#define TARGET_FRAME_US 28500
 
 static int fb_fd = -1;
 static int kbd_fd = -1;
@@ -26,7 +26,6 @@ static size_t fb_size = 0;
 static uint8_t* fb_mem = NULL;
 static uint16_t* pixel_index_map = NULL;
 
-// --- 终极官方宏映射（基于你头文件的确切定义） ---
 void handle_input() {
     if (kbd_fd < 0) return;
     struct input_event ev;
@@ -34,17 +33,12 @@ void handle_input() {
         if (ev.type != EV_KEY) continue;
         int doom_key = 0;
         switch (ev.code) {
-            // ------- 移动控制：物理上下左右 (官方宏) -------
-            case KEY_UP: doom_key = DOOM_KEY_UP_ARROW; break;       // ↑ 前进
-            case KEY_DOWN: doom_key = DOOM_KEY_DOWN_ARROW; break;   // ↓ 后退
-            case KEY_LEFT: doom_key = DOOM_KEY_LEFT_ARROW; break;   // ← 左转
-            case KEY_RIGHT: doom_key = DOOM_KEY_RIGHT_ARROW; break; // → 右转
-
-            // ------- 战斗与交互 (现在全都有了官方定义) -------
-            case KEY_LEFTCTRL: doom_key = DOOM_KEY_CTRL; break;     // 左Ctrl -> 开火
-            case KEY_SPACE: doom_key = DOOM_KEY_SPACE; break;       // 空格 -> 使用/开门 (绝不会变成暂停)
-
-            // ------- 26个英文字母：保留存档打字功能 -------
+            case KEY_UP: doom_key = DOOM_KEY_UP_ARROW; break;
+            case KEY_DOWN: doom_key = DOOM_KEY_DOWN_ARROW; break;
+            case KEY_LEFT: doom_key = DOOM_KEY_LEFT_ARROW; break;
+            case KEY_RIGHT: doom_key = DOOM_KEY_RIGHT_ARROW; break;
+            case KEY_LEFTCTRL: doom_key = DOOM_KEY_CTRL; break;
+            case KEY_SPACE: doom_key = DOOM_KEY_SPACE; break;
             case KEY_Q: doom_key = DOOM_KEY_Q; break;
             case KEY_W: doom_key = DOOM_KEY_W; break;
             case KEY_E: doom_key = DOOM_KEY_E; break;
@@ -71,8 +65,6 @@ void handle_input() {
             case KEY_B: doom_key = DOOM_KEY_B; break;
             case KEY_N: doom_key = DOOM_KEY_N; break;
             case KEY_M: doom_key = DOOM_KEY_M; break;
-
-            // ------- 0-9 数字键：切枪 / 存档输数字 -------
             case KEY_1: doom_key = DOOM_KEY_1; break;
             case KEY_2: doom_key = DOOM_KEY_2; break;
             case KEY_3: doom_key = DOOM_KEY_3; break;
@@ -83,11 +75,9 @@ void handle_input() {
             case KEY_8: doom_key = DOOM_KEY_8; break;
             case KEY_9: doom_key = DOOM_KEY_9; break;
             case KEY_0: doom_key = DOOM_KEY_0; break;
-
-            // ------- 菜单与控制 (官方宏完全支持) -------
-            case KEY_LEFTSHIFT: doom_key = DOOM_KEY_SHIFT; break;   // 左Shift -> 加速跑
-            case KEY_ESC: doom_key = DOOM_KEY_ESCAPE; break;        // ESC -> 暂停
-            case KEY_ENTER: doom_key = DOOM_KEY_ENTER; break;       // 回车 -> 确认
+            case KEY_LEFTSHIFT: doom_key = DOOM_KEY_SHIFT; break;
+            case KEY_ESC: doom_key = DOOM_KEY_ESCAPE; break;
+            case KEY_ENTER: doom_key = DOOM_KEY_ENTER; break;
         }
         if (doom_key) {
             if (ev.value == 1) doom_key_down(doom_key);
@@ -111,13 +101,12 @@ int main(int argc, char** argv) {
     fb_mem = malloc(fb_size);
     if (!fb_mem) { perror("malloc fb"); close(fb_fd); return 1; }
 
-    // 锁定键盘
     kbd_fd = open("/dev/input/event6", O_RDONLY | O_NONBLOCK);
-    if (kbd_fd < 0) printf("⚠️ Keyboard not found, demo only.\n");
-    else printf("✅ BY Tech Keyboard locked! Arrows move, Letters type, Ctrl fire, Space open!\n");
+    if (kbd_fd < 0) printf("[WARN] Keyboard not found, demo only.\n");
+    else printf("[OK] BY Tech Keyboard locked! Arrows move, Letters type, Ctrl fire, Space open!\n");
 
-    int screen_w = vinfo.xres;   // 170
-    int screen_h = vinfo.yres;   // 320
+    int screen_w = vinfo.xres;
+    int screen_h = vinfo.yres;
     int doom_w = 320;
     int doom_h = 200;
 
@@ -126,8 +115,8 @@ int main(int argc, char** argv) {
     int idx = 0;
     for (int y = 0; y < screen_h; y++) {
         for (int x = 0; x < screen_w; x++) {
-            int src_y = x + 15;   // 裁切
-            int src_x = 319 - y;  // 旋转
+            int src_y = x + 15;
+            int src_x = 319 - y;
             if (src_y < 0) src_y = 0;
             if (src_y >= doom_h) src_y = doom_h - 1;
             if (src_x < 0) src_x = 0;
